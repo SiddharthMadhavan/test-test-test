@@ -3,7 +3,6 @@ qdrant-client
 qdrant-client[fastembed]
 numpy
 google-generativeai
-os
 dataclasses
 google
 uuid
