@@ -11,7 +11,7 @@ from qdrant_client.models import Filter, FieldCondition, MatchValue
 from qdrant_client.models import PayloadSchemaType
 import numpy as np
 from datetime import datetime
-from google import genai
+from google-generativeai import genai
 import os
 
 app = Flask(__name__)
