@@ -12,7 +12,7 @@ from qdrant_client.models import PayloadSchemaType
 import numpy as np
 from datetime import datetime
 from google import genai
-
+import os
 
 app = Flask(__name__)
 
