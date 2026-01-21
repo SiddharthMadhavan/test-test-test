@@ -2,7 +2,7 @@ flask
 qdrant-client
 qdrant-client[fastembed]
 numpy
-google-generativeai
+google-genai
 dataclasses
 google
 uuid
