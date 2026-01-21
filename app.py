@@ -443,7 +443,7 @@ def upload_document():
                 
                 # Groq Vision API call
                 response = groq_client.chat.completions.create(
-                    model="llama-4-scout-17b-16e-instruct",
+                    model="llama-3.2-vision",
                     messages=[
                         {
                             "role": "user",
