@@ -45,6 +45,10 @@ VECTOR_DIM = 384
 def timeline_summary():
     data = request.json
 
+    query = data.get("query")
+    if not isinstance(query, str) or not query.strip():
+        return jsonify({"error": "query is required"}), 400
+
     points = search_events(
         query_text=data["query"],
         patient_id=data["patient_id"],
@@ -186,6 +190,10 @@ def ingest():
 def search():
     data = request.json
 
+    query = data.get("query")
+    if not isinstance(query, str) or not query.strip():
+        return jsonify({"error": "query is required"}), 400
+
     points = search_events(
         query_text=data["query"],
         patient_id=data["patient_id"]
@@ -205,8 +213,15 @@ def search():
     return jsonify(response)
 
 def search_events(query_text: str, patient_id: str, limit: int = 5):
+    if not query_text or not query_text.strip():
+        return []
+
+    query_vector = list(embedding_model.embed(query_text))
+    if not query_vector:
+        return []
+
+    query_vector = query_vector[0].tolist()
     # Convert query to vector
-    query_vector = list(embedding_model.embed(query_text))[0].tolist()
 
     # Filter to only this patient
     search_filter = Filter(
@@ -309,6 +324,10 @@ def compute_difference(points):
 def difference():
     data = request.json
 
+    query = data.get("query")
+    if not isinstance(query, str) or not query.strip():
+        return jsonify({"error": "query is required"}), 400
+
     points = search_events(
         query_text=data["query"],
         patient_id=data["patient_id"]
@@ -365,6 +384,10 @@ def ai_explain(prompt: str):
 @app.route("/explain", methods=["POST"])
 def explain():
     data = request.json
+
+    query = data.get("query")
+    if not isinstance(query, str) or not query.strip():
+        return jsonify({"error": "query is required"}), 400
 
     # Step 1: Get search results
     points = search_events(
