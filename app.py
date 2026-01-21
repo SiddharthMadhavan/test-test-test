@@ -409,82 +409,14 @@ def update_profile():
 
 @app.route("/upload-document", methods=["POST"])
 def upload_document():
-    """Upload document with OCR text extraction using Groq Vision"""
+    file_content = file.read()
+    media_type = file.content_type or ""
+
     try:
-        if 'file' not in request.files:
-            return jsonify({"error": "No file uploaded"}), 400
-        
-        file = request.files['file']
-        patient_id = request.form.get('patient_id')
-        doctor_name = request.form.get('doctor_name', 'Unknown')
-        hospital_name = request.form.get('hospital_name', 'Unknown')
-        
-        if not patient_id:
-            return jsonify({"error": "patient_id required"}), 400
-        
-        logger.info(f"Processing document for patient: {patient_id}")
-        
-        # Read file as base64
-        file_content = file.read()
-        base64_image = base64.b64encode(file_content).decode('utf-8')
-        
-        # Determine media type
-        media_type = file.content_type or 'image/jpeg'
-        if media_type.startswith('image/'):
-            pass  # Keep as is
-        elif media_type == 'application/pdf':
-            media_type = 'application/pdf'
-        else:
-            # Default to jpeg for unknown types
-            media_type = 'image/jpeg'
-        
-        # Use Groq Vision API for OCR
-        extracted_text = ""
-        if groq_client:
-            try:
-                logger.info("Using Groq Vision API for OCR...")
-                
-                # Groq Vision API call
-                response = groq_client.chat.completions.create(
-                    model="llama-3.2-11b-vision",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": "Extract all text from this medical document. Include:\n- Patient information\n- Doctor/Hospital details\n- Diagnosis, symptoms, or test results\n- Medications or treatments\n- Any dates or timestamps\n- Lab values and measurements\n\nProvide a clear, structured extraction of all visible text."
-                                },
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:{media_type};base64,{base64_image}"
-                                    }
-                                }
-                            ]
-                        }
-                    ],
-                    max_tokens=2048,
-                    temperature=0.1  # Low temperature for accurate extraction
-                )
-                
-                if response.choices and response.choices[0].message.content:
-                    extracted_text = response.choices[0].message.content
-                    logger.info("OCR successful - text extracted")
-                else:
-                    raise Exception("Empty response from Groq Vision")
-                    
-            except Exception as e:
-                logger.error(f"Groq Vision OCR error: {e}")
-                extracted_text = f"Document: {file.filename}\n\nOCR Error: {str(e)}"
-        else:
-            logger.warning("Groq client not initialized")
-            extracted_text = f"Document: {file.filename}\n\nNote: AI OCR unavailable. Groq API not configured."
-        
-        # Get manual notes if provided
-        additional_notes = request.form.get('notes', '')
-        if additional_notes:
-            extracted_text += f"\n\nAdditional Notes: {additional_notes}"
+        extracted_text = extract_text_from_file(file_content, media_type)
+    except Exception as e:
+        logger.error(f"OCR failed: {e}")
+        extracted_text = f"Document: {file.filename}\n\nOCR failed."
         
         # Create event with extracted text
         doc_date = datetime.now(timezone.utc).isoformat()
