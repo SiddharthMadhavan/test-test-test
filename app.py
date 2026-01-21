@@ -19,6 +19,9 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.units import inch
 import atexit
+from pdf2image import convert_from_bytes
+import pytesseract
+from PIL import Image
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -694,6 +697,23 @@ def export_pdf():
         return jsonify({"error": str(e)}), 500
 
 # ==================== HELPER FUNCTIONS ====================
+
+def extract_text_from_file(file_bytes, content_type):
+    text_chunks = []
+
+    if content_type == "application/pdf":
+        pages = convert_from_bytes(file_bytes)
+        for page in pages:
+            text_chunks.append(pytesseract.image_to_string(page))
+
+    elif content_type.startswith("image/"):
+        image = Image.open(BytesIO(file_bytes))
+        text_chunks.append(pytesseract.image_to_string(image))
+
+    else:
+        raise ValueError("Unsupported file type for OCR")
+
+    return "\n\n".join(t.strip() for t in text_chunks if t.strip())
 
 def create_medical_event(content, patient_id, event_type, timestamp=None, doctor_name="", hospital_name=""):
     return MedicalEvent(
