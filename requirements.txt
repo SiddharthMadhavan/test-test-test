@@ -46,6 +46,9 @@ certifi
 charset-normalizer
 urllib3
 idna
+pytesseract
+pdf2image
+Pillow
 
 # ===========================================
 # OPTIONAL DEPENDENCIES
