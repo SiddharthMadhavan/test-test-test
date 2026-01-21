@@ -811,4 +811,4 @@ def ai_explain(prompt):
             return "AI rate limit reached. Timeline data is available below."
         elif "auth" in error_msg or "invalid" in error_msg:
             logger.error(f"Groq auth failed: {e}")
-            return "AI authentication failed.
+            return "AI authentication failed."
